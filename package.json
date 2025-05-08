@@ -1,0 +1,28 @@
+{
+  "name": "meu-projeto",
+  "version": "1.0.0",
+  "description": "Aplicação mínima de Express com Sequelize para Usuarios",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "meu-projeto": "file:",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "keywords": [
+    "express",
+    "sequelize",
+    "nodejs",
+    "api"
+  ],
+  "author": "Seu Nome",
+  "license": "ISC"
+}
