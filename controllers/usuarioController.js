@@ -2,8 +2,7 @@ const Usuario = require('../models/Usuario');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-/* ─────────  Handlers CRUD  ───────── */
-
+// Lista todos os usuários
 async function listarUsuarios(req, res) {
   try {
     const usuarios = await Usuario.findAll();
@@ -14,6 +13,7 @@ async function listarUsuarios(req, res) {
   }
 }
 
+// Obtém um usuário por ID
 async function obterUsuarioPorId(req, res) {
   const { id } = req.params;
   try {
@@ -26,9 +26,13 @@ async function obterUsuarioPorId(req, res) {
   }
 }
 
+// Cria um novo usuário
 async function criarUsuario(req, res) {
   const { nome, sobrenome, email, senha } = req.body;
   try {
+    const existente = await Usuario.findOne({ where: { email } });
+    if (existente) return res.status(400).json({ message: 'E-mail já cadastrado' });
+
     const novoUsuario = await Usuario.create({ nome, sobrenome, email, senha });
     res.status(201).json(novoUsuario);
   } catch (error) {
@@ -37,6 +41,7 @@ async function criarUsuario(req, res) {
   }
 }
 
+// Atualiza dados de um usuário
 async function atualizarUsuario(req, res) {
   const { id } = req.params;
   const { nome, sobrenome, email, senha } = req.body;
@@ -46,6 +51,7 @@ async function atualizarUsuario(req, res) {
       { where: { id } }
     );
     if (linhas === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
+
     const usuario = await Usuario.findByPk(id);
     res.status(200).json(usuario);
   } catch (error) {
@@ -54,6 +60,7 @@ async function atualizarUsuario(req, res) {
   }
 }
 
+// Remove um usuário
 async function excluirUsuario(req, res) {
   const { id } = req.params;
   try {
@@ -66,18 +73,26 @@ async function excluirUsuario(req, res) {
   }
 }
 
-/* ─────────  Login (gera JWT)  ───────── */
+// Login de usuário
+async function login(req, res) {
+  const { email, senha } = req.body;
 
-function login(req, res) {
-  const { username } = req.body;
-  if (username !== 'admin') return res.status(401).json({ message: 'Usuário inválido' });
+  try {
+    const usuario = await Usuario.findOne({ where: { email } });
 
-  const user = { name: username };
-  const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token });
+    if (!usuario || usuario.senha !== senha) {
+      return res.status(401).json({ message: 'E-mail ou senha inválidos' });
+    }
+
+    const payload = { id: usuario.id, nome: usuario.nome };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao realizar login' });
+  }
 }
-
-/* ─────────  Exporta tudo de uma vez  ───────── */
 
 module.exports = {
   login,
